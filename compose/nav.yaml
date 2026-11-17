@@ -1,0 +1,24 @@
+services:
+  navigation:
+    image: navigation
+    platform: linux/amd64
+    build:
+      context: ../.
+      dockerfile: ./autonomy/Dockerfile
+      cache_from:
+        - type=registry,ref=omnibot/navigation-cache:main
+    network_mode: "host"
+    ipc: "host"
+    restart: 'no'
+    healthcheck:
+      test: [ "CMD", "cat", "READY.txt" ]
+      interval: 1s
+      timeout: 1s
+      retries: 100
+      start_period: 30s
+    environment:
+      - RCUTILS_CONSOLE_OUTPUT_FORMAT={date_time_with_ms} [{name}] [{severity}] {message}
+      - RCUTILS_COLORIZED_OUTPUT=1
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - LIBGL_ALWAYS_INDIRECT=0

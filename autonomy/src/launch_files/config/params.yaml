@@ -1,0 +1,432 @@
+# For parameter descriptions, please refer to the template parameter files for each node.
+
+behavior_server:
+  ros__parameters:
+    local_costmap_topic: local_costmap/costmap_raw
+    global_costmap_topic: global_costmap/costmap_raw
+    local_footprint_topic: local_costmap/published_footprint
+    global_footprint_topic: global_costmap/published_footprint
+    cycle_frequency: 20.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+    spin:
+      plugin: "nav2_behaviors::Spin"
+    backup:
+      plugin: "nav2_behaviors::BackUp"
+    drive_on_heading:
+      plugin: "nav2_behaviors::DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors::Wait"
+    assisted_teleop:
+      plugin: "nav2_behaviors::AssistedTeleop"
+    local_frame: odom
+    global_frame: map
+    robot_base_frame: base_link
+    transform_tolerance: 0.1
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 1.0
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2
+
+bt_navigator:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_footprint
+    odom_topic: /odometry/local
+    bt_loop_duration: 10
+    default_server_timeout: 2000
+    wait_for_service_timeout: 3000
+    planner_id: "holonomic"
+    navigators: ["navigate_to_pose"]
+    navigate_to_pose:
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+    default_nav_to_pose_bt_xml: "$(find-pkg-share behavior_trees)/behavior_trees/navigate_to_pose.xml"
+    error_code_name_prefixes:
+      - compute_path_error_code
+      - follow_path_error_code
+      - mission_failure_code
+
+controller_server:
+  ros__parameters:
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+    progress_checker_plugins: ["progress_checker"]
+    goal_checker_plugins: ["goal_checker"]
+    path_handler_plugins: ["PathHandler"]
+    controller_plugins: ["FollowPath", "FollowPathSlow"]
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 1000.0
+    goal_checker:
+      stateful: false
+      plugin: "nav2_controller::StoppedGoalChecker"
+      xy_goal_tolerance: 0.5
+      yaw_goal_tolerance: 1.0
+      trans_stopped_velocity: 0.2
+      rot_stopped_velocity: 0.2
+    PathHandler:
+      plugin: "nav2_controller::FeasiblePathHandler"
+      prune_distance: 2.0
+      enforce_path_inversion: false
+      enforce_path_rotation: false
+      inversion_xy_tolerance: 0.2
+      inversion_yaw_tolerance: 0.4
+      minimum_rotation_angle: 0.5
+      reject_unit_path: true
+    FollowPath:
+      plugin: "nav2_graceful_controller::GracefulController"
+      ctrl_period: 0.05
+      min_lookahead: 0.25
+      max_lookahead: 1.0
+      initial_rotation: true
+      initial_rotation_threshold: 0.75
+      prefer_final_rotation: true
+      allow_backward: true
+      k_phi: 2.0
+      k_delta: 1.0
+      beta: 0.4
+      lambda: 2.0
+      v_linear_min: 0.1
+      v_linear_max: 1.0
+      v_angular_max: 5.0
+      v_angular_min_in_place: 0.25
+      slowdown_radius: 1.5
+      deceleration_max: 2.5
+      footprint_scaling_linear_vel: 0.5
+      footprint_scaling_factor: 0.25
+      footprint_scaling_step: 0.1
+      obstacle_cost_margin: 1
+      final_rotation_search_step: 0.1
+    FollowPathSlow:
+      plugin: "nav2_graceful_controller::GracefulController"
+      ctrl_period: 0.05
+      min_lookahead: 0.25
+      max_lookahead: 1.0
+      initial_rotation: true
+      initial_rotation_threshold: 0.75
+      prefer_final_rotation: true
+      allow_backward: true
+      k_phi: 2.0
+      k_delta: 1.0
+      beta: 0.4
+      lambda: 2.0
+      v_linear_min: 0.05
+      v_linear_max: 0.2
+      v_angular_max: 5.0
+      v_angular_min_in_place: 0.25
+      slowdown_radius: 1.0
+      deceleration_max: 2.5
+      footprint_scaling_linear_vel: 0.5
+      footprint_scaling_factor: 0.25
+      footprint_scaling_step: 0.1
+      obstacle_cost_margin: 1
+      final_rotation_search_step: 0.1
+
+ekf_filter_node_map:
+  ros__parameters:
+    frequency: 50.0
+    two_d_mode: true # Recommended to use 2d mode for nav2 in mostly flat environments.
+    print_diagnostics: true
+    debug: false
+    publish_tf: false
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_footprint
+    world_frame: map
+
+    odom0: odom
+    odom0_config: [false, false, false,
+                  false, false, false,
+                  true, true, false,
+                  false, false, false,
+                  false, false, false]
+    odom0_queue_size: 10
+    odom0_nodelay: true
+    odom0_differential: false
+    odom0_relative: false
+
+    imu0: imu/data
+    imu0_config: [false, false, false,
+                  true, true, true,
+                  false, false, false,
+                  false, false, false,
+                  false, false, false]
+    imu0_differential: false  # If using a real robot you might want to set this to true, since usually absolute measurements from real imu's are not very accurate.
+    imu0_nodelay: true
+    imu0_relative: false
+    imu0_queue_size: 10
+    imu0_remove_gravitational_acceleration: true
+
+    use_control: false
+    
+    process_noise_covariance: [1.0, 1.0, 1.0, 30.0, 30.0, 30.0, 0.5, 0.5, 0.1, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]
+    initial_estimate_covariance: [1.0, 1.0, 1.0, 1.0e-9, 1.0e-9, 1.0e-9, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+ekf_filter_node_odom:
+  ros__parameters:
+    frequency: 50.0
+    two_d_mode: true  # Recommended to use 2d mode for nav2 in mostly flat environments.
+    print_diagnostics: true
+    debug: false
+    publish_tf: false
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_footprint
+    world_frame: odom
+
+    odom0: odom
+    odom0_config: [false, false, false,
+                  false, false, false,
+                  true, true, false,
+                  false, false, false,
+                  false, false, false]
+    odom0_queue_size: 10
+    odom0_nodelay: true
+    odom0_differential: false
+    odom0_relative: false
+
+    imu0: imu/data
+    imu0_config: [false, false, false,
+                  true, true, true,
+                  false, false, false,
+                  false, false, false,
+                  false, false, false]
+    imu0_nodelay: true
+    imu0_differential: false  # If using a real robot you might want to set this to true, since usually absolute measurements from real imu's are not very accurate.
+    imu0_relative: false
+    imu0_queue_size: 10
+    imu0_remove_gravitational_acceleration: true
+
+    use_control: false
+
+    process_noise_covariance: [1.0, 1.0, 1.0, 30.0, 30.0, 30.0, 0.5, 0.5, 0.1, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]
+    initial_estimate_covariance: [1.0, 1.0, 1.0, 1.0e-9, 1.0e-9, 1.0e-9, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+gazebo: 
+  ros__parameters: 
+      publish_rate: 100.0
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 10.0
+      publish_frequency: 10.0
+      global_frame: odom
+      transform_tolerance: 1.0
+      robot_base_frame: base_footprint
+      rolling_window: true
+      width: 15
+      height: 15
+      resolution: 0.02
+      robot_radius: 0.4
+      footprint: "[[0.15, 0.15], [0.15, -0.15], [-0.15, -0.15], [-0.15, 0.15]]"
+      plugins: ["spatio_temporal_voxel_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 1.5
+        inflation_radius: 0.75
+      spatio_temporal_voxel_layer:
+        plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"
+        enabled:               true
+        voxel_decay:           2.0          # Seconds if linear, e^n if exponential.
+        decay_model:           0            # 0=linear, 1=exponential, -1=persistent.
+        voxel_size:            0.15         # Meters.
+        track_unknown_space:   true         # Default space is unknown.
+        observation_persistence: 0.0        # Seconds.
+        mark_threshold:        1            # Voxel height.
+        update_footprint_enabled: true
+        combination_method:    1            # 1=max, 0=override.
+        obstacle_range:        25.0         # Meters.
+        origin_z:              0.0          # Meters.
+        publish_voxel_map:     false        # Default off.
+        transform_tolerance:   0.2          # Seconds.
+        mapping_mode:          false        # Default off, saves map not for navigation.
+        map_save_duration:     60.0         # Default 60s, how often to autosave.
+        observation_sources:   lidar_mark   # lidar_clear.
+        lidar_mark:
+          data_type: PointCloud2
+          topic: /filtered_pointcloud
+          marking: true
+          clearing: false
+          obstacle_range: 25.0
+          min_obstacle_height: 0.0          # Default 0, meters
+          max_obstacle_height: 3.0          # Defaule 3, meters
+          expected_update_rate: 0.0         # Default 0, if not updating at this rate at least, remove from buffer.
+          observation_persistence: 0.0      # Default 0, use all measurements taken during now-value, 0=latest.
+          clear_after_reading: true         # Default false, clear the buffer after the layer gets readings from it.
+          inf_is_valid: false               # Default false, for laser scans.
+          voxel_min_points: 1               # Default 0, minimum points per voxel for voxel filter.
+          filter: "voxel"                   # Default passthrough, apply "voxel", "passthrough", or no filter to sensor data, recommended to have at one filter on.
+        lidar_clear:
+          enabled: false                    # Default true, can be toggled on/off with associated service call.
+          data_type: PointCloud2
+          topic: /filtered_pointcloud
+          marking: false
+          clearing: true
+          min_z: 0.1                        # Default 0, meters.
+          max_z: 7.0                        # Default 10, meters.
+          vertical_fov_angle: 0.785398      # Default 0.7, radians.
+          horizontal_fov_angle: 6.28319     # Default 1.04, radians.
+          decay_acceleration: 1.            # Default 0, 1/s^2. If laser scanner MUST be 0.
+          model_type: 1                     # Default 0 (depth camera). Use 1 for 3D Lidar.
+      always_send_full_costmap: true
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 0.2
+      global_frame: map
+      robot_base_frame: base_footprint
+      resolution: 0.5
+      rolling_window: False
+      width: 100
+      height: 100
+      trinary_costmap: false
+      track_unknown_space: false
+      plugins: ["static_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        enabled: True
+        map_topic: /map
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        enabled: True
+        inflation_radius: 0.5
+        cost_scaling_factor: 0.5
+      always_send_full_costmap: True
+
+planner_server:
+  ros__parameters:
+    planner_plugins: ["holonomic"]
+    holonomic:
+      plugin: "nav2_smac_planner::SmacPlanner2D" 
+      tolerance: 0.125                        # Tolerance for planning if unable to reach exact pose, in meters.
+      downsample_costmap: false               # Whether or not to downsample the map.
+      downsampling_factor: 1                  # Multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm).
+      allow_unknown: false                    # Allow traveling in unknown space.
+      max_iterations: -1                      # Maximum total iterations to search for before failing (in case unreachable), set to -1 to disable.
+      max_on_approach_iterations: 10000       # Maximum number of iterations to attempt to reach goal once in tolerance.
+      max_planning_time: 20.0                 # The max time for the planner to plan, smooth.
+      cost_travel_multiplier: 20.0            # Cost multiplier to apply to search to steer away from high cost areas.
+      use_final_approach_orientation: false   # Whether to set the final path pose at the goal's orientation to the requested orientation (false) or in line with the approach angle so the robot doesn't rotate to heading (true).
+      smoother:
+        max_iterations: 1000
+        w_smooth: 0.6
+        w_data: 0.8
+        tolerance: 0.0000000001
+
+# pointcloud_processing:
+#   ros__parameters:
+
+slam_toolbox:
+  ros__parameters:
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+    # ROS Parameters
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_footprint
+    scan_topic: /lidar/scan
+    use_map_saver: true
+    mode: mapping # Localization.
+    # if you'd like to immediately start continuing a map at a given pose
+    # or at the dock, but they are mutually exclusive, if pose is given will use pose.
+    # map_file_name: test_steve
+    # map_start_pose: [0.0, 0.0, 0.0]
+    # map_start_at_dock: true
+    debug_logging: true
+    throttle_scans: 1
+    transform_publish_period: 0.02 # If 0 never publishes odometry.
+    map_update_interval: 5.0
+    resolution: 0.1
+    max_laser_range: 15.0 # For rastering images.
+    minimum_time_interval: 0.5
+    transform_timeout: 0.2
+    tf_buffer_duration: 30.0
+    stack_size_to_use: 1000000
+    enable_interactive_mode: true
+    # General Parameters
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.5
+    minimum_travel_heading: 0.5
+    scan_buffer_size: 10
+    scan_buffer_maximum_scan_distance: 10.0
+    link_match_minimum_response_fine: 0.1  
+    link_scan_maximum_distance: 1.5
+    loop_search_maximum_distance: 3.0
+    do_loop_closing: true 
+    loop_match_minimum_chain_size: 10           
+    loop_match_maximum_variance_coarse: 3.0  
+    loop_match_minimum_response_coarse: 0.35    
+    loop_match_minimum_response_fine: 0.45
+    # Correlation Parameters - Correlation Parameters
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1 
+    # Correlation Parameters - Loop Closure Parameters
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+    # Scan Matcher Parameters
+    distance_variance_penalty: 0.5      
+    angle_variance_penalty: 1.0    
+    fine_search_angle_offset: 0.00349     
+    coarse_search_angle_offset: 0.349   
+    coarse_angle_resolution: 0.0349        
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true
+
+twist_mux_pre_smoother:
+  ros__parameters:
+    use_stamped: false
+    topics:
+      joystick:
+        topic: joystick_teleop/cmd_vel
+        timeout: 0.5
+        priority: 100
+      keyboard:
+        topic: keyboard_teleop/cmd_vel
+        timeout: 0.5
+        priority: 100
+      navigation:
+        topic: cmd_vel_controller
+        timeout: 0.1
+        priority: 50
+
+twist_mux_post_smoother:
+  ros__parameters:
+    use_stamped: false
+    topics:
+      navigation:
+        topic: cmd_vel_smoother
+        timeout: 0.1
+        priority: 50
+      navigation_stop:
+        topic: cmd_vel_stop
+        timeout: 0.1
+        priority: 75
+
+velocity_smoother:
+  ros__parameters:
+    smoothing_frequency: 20.0
+    scale_velocities: False
+    feedback: "OPEN_LOOP"
+    odom_topic: "odom"
+    odom_duration: 0.1
+    min_velocity: [-1.0, -10.0, -10.0]
+    max_accel: [0.25, 10.0, 3.2]
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
+

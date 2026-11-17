@@ -1,0 +1,13 @@
+services:
+  navigation:
+    environment:
+      - SIMULATION=true
+      - SIMULATION_SPEED=3
+      - RVIZ=true
+      - VNC_DISPLAY=0
+    devices:
+      - /dev/dri
+    group_add:
+      - 990
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
