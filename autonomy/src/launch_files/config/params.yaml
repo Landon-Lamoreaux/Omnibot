@@ -207,6 +207,19 @@ ekf_filter_node_odom:
     process_noise_covariance: [1.0, 1.0, 1.0, 30.0, 30.0, 30.0, 0.5, 0.5, 0.1, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]
     initial_estimate_covariance: [1.0, 1.0, 1.0, 1.0e-9, 1.0e-9, 1.0e-9, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 
+gamepad:
+  ros__parameters:
+    toggle_button: 6  # The Options Button.
+    forward_axis: 1
+    strafe_axis: 0
+    yaw_axis: 2
+    forward_scale: 1.0
+    strafe_scale: 1.0
+    yaw_scale: 1.2
+    deadzone: 0.08
+    joy_timeout: 0.35   # The time since the last message from the controller.
+    publish_rate: 30.0  # hz
+
 gazebo: 
   ros__parameters: 
       publish_rate: 100.0
@@ -350,7 +363,7 @@ slam_toolbox:
     map_update_interval: 5.0
     resolution: 0.1
     max_laser_range: 15.0 # For rastering images.
-    minimum_time_interval: 0.5
+    minimum_time_interval: 0.1
     transform_timeout: 0.2
     tf_buffer_duration: 30.0
     stack_size_to_use: 1000000
@@ -358,8 +371,8 @@ slam_toolbox:
     # General Parameters
     use_scan_matching: true
     use_scan_barycenter: true
-    minimum_travel_distance: 0.5
-    minimum_travel_heading: 0.5
+    minimum_travel_distance: 0.1
+    minimum_travel_heading: 0.1
     scan_buffer_size: 10
     scan_buffer_maximum_scan_distance: 10.0
     link_match_minimum_response_fine: 0.1  
@@ -370,6 +383,7 @@ slam_toolbox:
     loop_match_maximum_variance_coarse: 3.0  
     loop_match_minimum_response_coarse: 0.35    
     loop_match_minimum_response_fine: 0.45
+    check_min_dist_and_heading_precisely: true
     # Correlation Parameters - Correlation Parameters
     correlation_search_space_dimension: 0.5
     correlation_search_space_resolution: 0.01
@@ -388,9 +402,9 @@ slam_toolbox:
     minimum_distance_penalty: 0.5
     use_response_expansion: true
 
-twist_mux:
+twist_mux_pre_smoother:
   ros__parameters:
-    use_stamped: false
+    use_stamped: true
     topics:
       joystick:
         topic: cmd_vel_joy
@@ -401,6 +415,19 @@ twist_mux:
         timeout: 0.1
         priority: 50
 
+twist_mux_post_smoother:
+  ros__parameters:
+    use_stamped: true
+    topics:
+      navigation:
+        topic: cmd_vel_smoother
+        timeout: 0.1
+        priority: 50
+      navigation_stop:
+        topic: cmd_vel_stop
+        timeout: 0.1
+        priority: 75
+
 velocity_smoother:
   ros__parameters:
     smoothing_frequency: 20.0
@@ -408,8 +435,10 @@ velocity_smoother:
     feedback: "OPEN_LOOP"
     odom_topic: "odom"
     odom_duration: 0.1
-    min_velocity: [-1.0, -10.0, -10.0]
-    max_accel: [0.25, 10.0, 3.2]
+    min_velocity: [-0.75, -0.75, -2.0]
+    max_velocity: [0.75, 0.75, 2.0]
+    max_accel: [1.5, 1.5, 3.2]
+    max_decel: [-1.5, -1.5, -3.2]
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
 

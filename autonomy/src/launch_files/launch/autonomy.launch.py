@@ -105,25 +105,27 @@ def launch_setup(context):
     )
 
     joystick_driver = Node(
-        package='joy',
-        executable='game_controller_node',
-        name='joy_node',
+        package="joy",
+        executable="game_controller_node",
+        name="joy_node",
         parameters=[{
-            'device_id': 0,
-            'deadzone': 0.05,
-            'autorepeat_rate': 20.0,
-            'sticky_buttons': False,
+            "device_id": 0,
+            "deadzone": 0.05,
+            "autorepeat_rate": 20.0,
+            "sticky_buttons": False,
         }],
         output='screen',
     )
 
     # Convert Joystick inputs from a gamepad into mecanum velocity commands.
     gamepad = Node(
-        package='gamepad',
-        executable='gamepad',
-        name='gamepad',
-        output='screen',
+        package="gamepad",
+        executable="gamepad",
+        name="gamepad",
+        output="screen",
+        parameters=[param_file, {"use_sim_time": simulation}],
     )
+
     # slam_toolbox = Node(
     #     package='slam_toolbox',
     #     executable='async_slam_toolbox_node',

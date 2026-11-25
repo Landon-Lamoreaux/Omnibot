@@ -6,13 +6,13 @@ from rclpy.node import Node
 import time
 
 from sensor_msgs.msg import Joy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 
 
 class Gamepad(Node):
 
     def __init__(self):
-        super().__init__('gamepad_node')
+        super().__init__('gamepad')
 
         # Controller mapping
         self.declare_parameter('toggle_button', 6)  # OPTIONS
@@ -21,9 +21,9 @@ class Gamepad(Node):
         self.declare_parameter('yaw_axis', 2)
 
         # Maximum velocities
-        self.declare_parameter('forward_scale', -0.35)
-        self.declare_parameter('strafe_scale', -0.30)
-        self.declare_parameter('yaw_scale', -0.70)
+        self.declare_parameter('forward_scale', 0.35)
+        self.declare_parameter('strafe_scale', 0.30)
+        self.declare_parameter('yaw_scale', 0.70)
 
         # Input settings
         self.declare_parameter('deadzone', 0.08)
@@ -77,7 +77,7 @@ class Gamepad(Node):
         self.previous_toggle_pressed = False
 
         self.cmd_pub = self.create_publisher(
-            Twist,
+            TwistStamped,
             '/cmd_vel_joy',
             10
         )
@@ -116,7 +116,7 @@ class Gamepad(Node):
         return bool(self.buttons[index])
 
     def publish_stop(self):
-        self.cmd_pub.publish(Twist())
+        self.cmd_pub.publish(TwistStamped())
 
     def joy_callback(self, msg):
 
@@ -176,22 +176,24 @@ class Gamepad(Node):
         if not self.enabled:
             return
 
-        cmd = Twist()
+        cmd = TwistStamped()
+
+        cmd.header.stamp = self.get_clock().now().to_msg()
 
         # Left stick: forward / reverse.
-        cmd.linear.x = -(
+        cmd.twist.linear.x = (
             self.get_axis(self.forward_axis)
             * self.forward_scale
         )
 
         # Left stick: strafe.
-        cmd.linear.y = -(
+        cmd.twist.linear.y = (
             self.get_axis(self.strafe_axis)
             * self.strafe_scale
         )
 
         # Right stick: rotation.
-        cmd.angular.z = -(
+        cmd.twist.angular.z = (
             self.get_axis(self.yaw_axis)
             * self.yaw_scale
         )

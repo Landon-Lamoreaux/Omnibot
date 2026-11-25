@@ -170,7 +170,14 @@ def launch_setup(context):
             Node(
                 package="twist_mux",
                 executable="twist_mux",
-                name="twist_mux",
+                name="twist_mux_pre_smoother",
+                parameters=[configured_params],
+                remappings=[("/cmd_vel_out", "/cmd_vel_pre_smoother")],
+            ),
+            Node(
+                package="twist_mux",
+                executable="twist_mux",
+                name="twist_mux_post_smoother",
                 parameters=[configured_params],
                 remappings=[("/cmd_vel_out", "/cmd_vel")],
             ),
