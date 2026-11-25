@@ -12,6 +12,19 @@ else
   xhost +local:root > /dev/null
 fi
 
+# Getting the host's input group GID.
+INPUT_GID=$(getent group input | cut -d: -f3)
+
+if [ -z "$INPUT_GID" ]; then
+    echo "ERROR: The host does not have an input group."
+    exit 1
+fi
+
+export INPUT_GID
+
+echo "Using input group GID: $INPUT_GID"
+
+
 docker compose -p nav down
 docker compose \
     -p nav \
