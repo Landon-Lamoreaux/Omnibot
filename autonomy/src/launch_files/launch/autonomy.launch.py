@@ -104,6 +104,26 @@ def launch_setup(context):
         parameters=[{"robot_description": ParameterValue(robot_description, value_type=str)}, {"use_sim_time": simulation}],
     )
 
+    joystick_driver = Node(
+        package='joy',
+        executable='game_controller_node',
+        name='joy_node',
+        parameters=[{
+            'device_id': 0,
+            'deadzone': 0.05,
+            'autorepeat_rate': 20.0,
+            'sticky_buttons': False,
+        }],
+        output='screen',
+    )
+
+    # Convert Joystick inputs from a gamepad into mecanum velocity commands.
+    gamepad = Node(
+        package='gamepad',
+        executable='gamepad',
+        name='gamepad',
+        output='screen',
+    )
     # slam_toolbox = Node(
     #     package='slam_toolbox',
     #     executable='async_slam_toolbox_node',
@@ -118,6 +138,8 @@ def launch_setup(context):
         nav_launch,
         rviz_launch,
         slam_toolbox_launch,
+        joystick_driver,
+        gamepad,
     ]
 
 

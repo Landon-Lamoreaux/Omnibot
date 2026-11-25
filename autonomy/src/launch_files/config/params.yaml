@@ -388,35 +388,18 @@ slam_toolbox:
     minimum_distance_penalty: 0.5
     use_response_expansion: true
 
-twist_mux_pre_smoother:
+twist_mux:
   ros__parameters:
     use_stamped: false
     topics:
       joystick:
-        topic: joystick_teleop/cmd_vel
-        timeout: 0.5
-        priority: 100
-      keyboard:
-        topic: keyboard_teleop/cmd_vel
+        topic: cmd_vel_joy
         timeout: 0.5
         priority: 100
       navigation:
         topic: cmd_vel_controller
         timeout: 0.1
         priority: 50
-
-twist_mux_post_smoother:
-  ros__parameters:
-    use_stamped: false
-    topics:
-      navigation:
-        topic: cmd_vel_smoother
-        timeout: 0.1
-        priority: 50
-      navigation_stop:
-        topic: cmd_vel_stop
-        timeout: 0.1
-        priority: 75
 
 velocity_smoother:
   ros__parameters:

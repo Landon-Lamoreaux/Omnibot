@@ -105,6 +105,20 @@ RUN set -ex; \
     cd /usr/src/robot_driver; \
     colcon build
 
+# Building the gamepad node.
+FROM nav2 AS gamepad
+SHELL ["/bin/bash", "-c"]
+COPY ./autonomy/src/gamepad /usr/src/gamepad
+COPY --from=msgs /usr/src/msgs/install /usr/src/msgs/install
+RUN apt-get update && apt-get install -y \
+    ros-lyrical-joy \
+    && rm -rf /var/lib/apt/lists/*
+RUN set -ex; \
+    . /opt/ros/lyrical/setup.bash; \
+    . /usr/src/msgs/install/setup.bash; \
+    cd /usr/src/gamepad; \
+    colcon build
+
 FROM nav2 AS run
 SHELL ["/bin/bash", "-c"]
 
@@ -121,6 +135,7 @@ RUN apt-get update && \
       ros-lyrical-twist-mux \
       ros-lyrical-joint-state-publisher \
       ros-lyrical-spatio-temporal-voxel-layer \
+      ros-lyrical-joy \
       vim \
       valgrind \
       heaptrack \
@@ -134,6 +149,7 @@ RUN touch /root/.bashrc && \
     echo ". /usr/src/pointcloud_processing/install/setup.bash" >> /root/.bashrc ;\
     echo ". /usr/src/behavior_trees/install/setup.bash" >> /root/.bashrc; \
     echo ". /usr/src/robot_driver/install/setup.bash" >> /root/.bashrc; \
+    echo ". /usr/src/gamepad/install/setup.bash" >> /root/.bashrc; \
     echo ". /usr/src/launch_files/install/setup.bash" >> /root/.bashrc; \
     echo ". /usr/src/msgs/install/setup.bash" >> /root/.bashrc;
 
@@ -141,6 +157,7 @@ COPY --from=pointcloud_processing /usr/src/pointcloud_processing/install /usr/sr
 COPY --from=launch_files /usr/src/launch_files/install /usr/src/launch_files/install
 COPY --from=behavior_trees /usr/src/behavior_trees /usr/src/behavior_trees
 COPY --from=robot_driver /usr/src/robot_driver /usr/src/robot_driver
+COPY --from=gamepad /usr/src/gamepad /usr/src/gamepad
 COPY --from=msgs /usr/src/msgs/install /usr/src/msgs/install
 
 COPY ./autonomy/entrypoint.sh /usr/src/entrypoint.sh
