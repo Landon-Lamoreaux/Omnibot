@@ -209,10 +209,10 @@ ekf_filter_node_odom:
 
 gamepad:
   ros__parameters:
-    toggle_button: 6  # The Options Button.
+    toggle_button: 9  # The Options Button.
     forward_axis: 1
     strafe_axis: 0
-    yaw_axis: 2
+    yaw_axis: 3
     forward_scale: 1.0
     strafe_scale: 1.0
     yaw_scale: 1.2

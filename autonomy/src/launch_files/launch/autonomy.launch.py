@@ -105,16 +105,11 @@ def launch_setup(context):
     )
 
     joystick_driver = Node(
-        package="joy",
-        executable="game_controller_node",
+        package="joy_linux",
+        executable="joy_linux_node",
         name="joy_node",
-        parameters=[{
-            "device_id": 0,
-            "deadzone": 0.05,
-            "autorepeat_rate": 20.0,
-            "sticky_buttons": False,
-        }],
-        output='screen',
+        parameters=[param_file, {"use_sim_time": simulation}],
+        output="screen",
     )
 
     # Convert Joystick inputs from a gamepad into mecanum velocity commands.

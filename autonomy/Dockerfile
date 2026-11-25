@@ -111,7 +111,7 @@ SHELL ["/bin/bash", "-c"]
 COPY ./autonomy/src/gamepad /usr/src/gamepad
 COPY --from=msgs /usr/src/msgs/install /usr/src/msgs/install
 RUN apt-get update && apt-get install -y \
-    ros-lyrical-joy \
+    ros-lyrical-joy-linux \
     && rm -rf /var/lib/apt/lists/*
 RUN set -ex; \
     . /opt/ros/lyrical/setup.bash; \
@@ -135,7 +135,7 @@ RUN apt-get update && \
       ros-lyrical-twist-mux \
       ros-lyrical-joint-state-publisher \
       ros-lyrical-spatio-temporal-voxel-layer \
-      ros-lyrical-joy \
+      ros-lyrical-joy-linux \
       vim \
       valgrind \
       heaptrack \
