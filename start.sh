@@ -4,7 +4,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export ROOT_DIR=$SCRIPT_DIR
 cd "$ROOT_DIR" || exit
 
-export DISPLAY=:0
+export DISPLAY=${DISPLAY:-:0}
 
 if [ "$SIMULATION" = true ]; then
   xhost + > /dev/null

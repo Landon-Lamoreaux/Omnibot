@@ -212,7 +212,7 @@ gamepad:
     toggle_button: 9  # The Options Button.
     forward_axis: 1
     strafe_axis: 0
-    yaw_axis: 3
+    yaw_axis: 2
     forward_scale: 1.0
     strafe_scale: 1.0
     yaw_scale: 1.2

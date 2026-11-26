@@ -100,6 +100,12 @@ SHELL ["/bin/bash", "-c"]
 COPY ./autonomy/src/robot_driver /usr/src/robot_driver
 COPY --from=msgs /usr/src/msgs/install /usr/src/msgs/install
 RUN set -ex; \
+    sudo apt-get update; \
+    sudo apt-get install -y \
+    libgpiod-dev \
+    gpiod \
+    pkg-config;
+RUN set -ex; \
     . /opt/ros/lyrical/setup.bash; \
     . /usr/src/msgs/install/setup.bash; \
     cd /usr/src/robot_driver; \

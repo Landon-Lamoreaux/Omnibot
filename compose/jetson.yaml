@@ -1,0 +1,12 @@
+services:
+  navigation:
+    image: navigation
+    platform: linux/arm64
+    runtime: nvidia
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+    devices:
+      - /dev/gpiochip0:/dev/gpiochip0
+      - /dev/gpiochip1:/dev/gpiochip1
+      - /dev/dri:/dev/dri
